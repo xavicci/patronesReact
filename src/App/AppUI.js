@@ -1,5 +1,6 @@
 import React from 'react';
-import { TodoContext } from '../TodoContext';
+import { useTodos } from './useTodos';
+import { TodoHeader } from '../TodoHeader';
 import { TodoCounter } from '../TodoCounter';
 import { TodoSearch } from '../TodoSearch';
 import { TodoList } from '../TodoList';
@@ -11,7 +12,7 @@ import { TodoForm } from '../TodoForm';
 import { CreateTodoButton } from '../CreateTodoButton';
 import { Modal } from '../Modal';
 
-function AppUI() {
+function App() {
   const {
     error,
     loading,
@@ -20,19 +21,40 @@ function AppUI() {
     deleteTodo,
     openModal,
     setOpenModal,
-  } = React.useContext(TodoContext);
-  
+    totalTodos,
+    completedTodos,
+    searchValue,
+    setSearchValue,
+    addTodo,
+  } = useTodos();
+
   return (
     <React.Fragment>
-      <TodoCounter />
-      <TodoSearch />
+      <TodoHeader>
+        <TodoCounter
+          totalTodos={totalTodos}
+          completedTodos={completedTodos}
+        />
+        <TodoSearch
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+      </TodoHeader>
 
-      <TodoList>
-        {error && <TodosError />}
-        {loading && <TodosLoading />}
-        {(!loading && !searchedTodos.length) && <EmptyTodos />}
-        
-        {searchedTodos.map(todo => (
+      <TodoList
+        error={error}
+        loading={loading}
+        totalTodos={totalTodos}
+        searchedTodos={searchedTodos}
+        searchText={searchValue}
+        onError={() => <TodosError />}
+        onLoading={() => <TodosLoading />}
+        onEmptyTodos={() => <EmptyTodos />}
+        onEmptySearchResults={
+          (searchText) => <p>No hay resultados para {searchText}</p>
+        }
+      >
+        {todo => (
           <TodoItem
             key={todo.text}
             text={todo.text}
@@ -40,12 +62,15 @@ function AppUI() {
             onComplete={() => completeTodo(todo.text)}
             onDelete={() => deleteTodo(todo.text)}
           />
-        ))}
+        )}
       </TodoList>
 
       {!!openModal && (
         <Modal>
-          <TodoForm />
+          <TodoForm
+            addTodo={addTodo}
+            setOpenModal={setOpenModal}
+          />
         </Modal>
       )}
 
@@ -56,4 +81,4 @@ function AppUI() {
   );
 }
 
-export { AppUI };
+export default App;
